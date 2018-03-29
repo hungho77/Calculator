@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <exception>
+#include"QInt.h"
 
 class CalculatorException : public std::exception
 {
@@ -22,12 +23,15 @@ private:
 class Calculator
 {
 public:
+	//
+	enum Mode : char { Dec, Hex, Bin };
+	Mode mode;
 	// ActionType: what has been entered from the calculator
-	enum class ActionType : char { Number, Plus, Minus, Multi, Div, Equal, None };
+	enum class ActionType : char { Number, Plus, Minus, Multi, Div, Equal, None, And, Or, Xor, Not };
 	struct Action
 	{
 		ActionType actionType;
-		double value;
+		QInt value;
 	};
 
 	void reset();
@@ -36,7 +40,7 @@ public:
 	// Current (partial) result as much as it can be calculated. Terms results are not
 	// taken into account until the term has finished: 3 + 2 X 5 would return 3 becouse
 	// the term calculation is not finished.
-	double getCurrentResult() const;
+	QInt getCurrentResult() const;
 	bool hasLeftTermValue() const { return m_leftTerm.hasValue(); }
 	bool hasLeftExpressionValue() const { return m_leftExpression.hasValue(); }
 	bool isOperation(ActionType action) const;
@@ -54,26 +58,30 @@ private:
 	{
 	public:
 		void reset();
-		void set(double value);
-		void add(double value);
-		double getValue() const { return m_value; }
+		void set(QInt value);
+		void add(QInt value);
+		void and(QInt value);
+		void or (QInt value);
+		void xor(QInt value);
+		void not();
+		QInt getValue() const { return m_value; }
 		bool hasValue() const { return m_hasValue; }
 	private:
 		bool m_hasValue = false;
-		double m_value = 0.0;
+		QInt m_value = 0;
 	};
 	// like: x,/
 	class LeftTerm
 	{
 	public:
 		void reset();
-		void set(double value);
-		void multiBy(double value);
-		double getValue() const { return m_value; }
+		void set(QInt value);
+		void multiBy(QInt value);
+		QInt getValue() const { return m_value; }
 		bool hasValue() const { return m_hasValue; }
 	private:
 		bool m_hasValue = false;
-		double m_value;
+		QInt m_value = 0;
 	};
 
 	// Data members:
@@ -99,33 +107,53 @@ private:
 inline void Calculator::LeftExpression::reset()
 {
 	m_hasValue = false;
-	m_value = 0.0;
+	m_value = 0;
 }
 
-inline void Calculator::LeftExpression::set(double value)
+inline void Calculator::LeftExpression::set(QInt value)
 {
 	m_hasValue = true;
 	m_value = value;
 }
 
-inline void Calculator::LeftExpression::add(double value)
+inline void Calculator::LeftExpression::add(QInt value)
 {
 	set(m_value + value);
+}
+
+inline void Calculator::LeftExpression::and (QInt value)
+{
+	set(m_value&value);
+}
+
+inline void Calculator::LeftExpression:: or (QInt value)
+{
+	set(m_value|value);
+}
+
+inline void Calculator::LeftExpression:: xor (QInt value)
+{
+	set(m_value ^ value);
+}
+
+inline void Calculator::LeftExpression::not()
+{
+	set(~m_value);
 }
 
 inline void Calculator::LeftTerm::reset()
 {
 	m_hasValue = false;
-	m_value = 0.0;
+	m_value = 0;
 }
 
-inline void Calculator::LeftTerm::set(double value)
+inline void Calculator::LeftTerm::set(QInt value)
 {
 	m_hasValue = true;
 	m_value = value;
 }
 
-inline void Calculator::LeftTerm::multiBy(double value)
+inline void Calculator::LeftTerm::multiBy(QInt value)
 {
 	set(m_value * value);
 }

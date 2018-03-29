@@ -21,12 +21,12 @@ class CAboutDlg : public CDialogEx
 public:
 	CAboutDlg();
 
-// Dialog Data
+	// Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 // Implementation
@@ -79,6 +79,21 @@ void CCalculatorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON_DIV, m_buttonDIV);
 	DDX_Control(pDX, IDC_BUTTON_CE, m_buttonCE);
 	DDX_Control(pDX, IDC_BUTTON_DEL, m_buttonDEL);
+	DDX_Control(pDX, IDC_EDIT1, m_edit1);
+	DDX_Text(pDX, IDC_EDIT1, m_strEdit1);
+	DDX_Control(pDX, IDC_BUTTON_AND, m_buttonAnd);
+	DDX_Control(pDX, IDC_BUTTON_OR, m_buttonOr);
+	DDX_Control(pDX, IDC_BUTTON_XOR, m_buttonXor);
+	DDX_Control(pDX, IDC_BUTTON_NOT, m_buttonNot);
+	DDX_Control(pDX, IDC_BUTTON_DEC, m_buttonDec);
+	DDX_Control(pDX, IDC_BUTTON_BIN, m_buttonBin);
+	DDX_Control(pDX, IDC_BUTTON_HEX, m_buttonHex);
+	DDX_Control(pDX, IDC_BUTTON_A, m_button10);
+	DDX_Control(pDX, IDC_BUTTON_B, m_button11);
+	DDX_Control(pDX, IDC_BUTTON_C, m_button12);
+	DDX_Control(pDX, IDC_BUTTON_D, m_button13);
+	DDX_Control(pDX, IDC_BUTTON_E, m_button14);
+	DDX_Control(pDX, IDC_BUTTON_F, m_button15);
 }
 
 BEGIN_MESSAGE_MAP(CCalculatorDlg, CDialogEx)
@@ -104,6 +119,19 @@ BEGIN_MESSAGE_MAP(CCalculatorDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_DIV, &CCalculatorDlg::OnBnClickedButtonDiv)
 	ON_BN_CLICKED(IDC_BUTTON_CE, &CCalculatorDlg::OnBnClickedButtonCe)
 	ON_BN_CLICKED(IDC_BUTTON_DEL, &CCalculatorDlg::OnBnClickedButtonDel)
+	ON_EN_CHANGE(IDC_EDIT1, &CCalculatorDlg::OnEnChangeEdit1)
+	ON_BN_CLICKED(IDC_BUTTON_AND, &CCalculatorDlg::OnBnClickedButtonAnd)
+	ON_BN_CLICKED(IDC_BUTTON_OR, &CCalculatorDlg::OnBnClickedButtonOr)
+	ON_BN_CLICKED(IDC_BUTTON_XOR, &CCalculatorDlg::OnBnClickedButtonXor)
+	ON_BN_CLICKED(IDC_BUTTON_NOT, &CCalculatorDlg::OnBnClickedButtonNot)
+	ON_BN_CLICKED(IDC_BUTTON_BIN, &CCalculatorDlg::OnBnClickedButtonBin)
+	ON_BN_CLICKED(IDC_BUTTON_HEX, &CCalculatorDlg::OnBnClickedButtonHex)
+	ON_BN_CLICKED(IDC_BUTTON_A, &CCalculatorDlg::OnBnClickedButtonA)
+	ON_BN_CLICKED(IDC_BUTTON_B, &CCalculatorDlg::OnBnClickedButtonB)
+	ON_BN_CLICKED(IDC_BUTTON_C, &CCalculatorDlg::OnBnClickedButtonC)
+	ON_BN_CLICKED(IDC_BUTTON_D, &CCalculatorDlg::OnBnClickedButtonD)
+	ON_BN_CLICKED(IDC_BUTTON_E, &CCalculatorDlg::OnBnClickedButtonE)
+	ON_BN_CLICKED(IDC_BUTTON_F, &CCalculatorDlg::OnBnClickedButtonF)
 END_MESSAGE_MAP()
 
 
@@ -141,7 +169,8 @@ BOOL CCalculatorDlg::OnInitDialog()
 	m_font.CreateFont(32, 0, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET,
 		0, 0, 0, 0, _T("Microsoft Sans Serif"));
 	m_editResult.SetFont(&m_font);
-
+	m_calculator.mode = Calculator::Dec;
+	m_strEdit1 = "Dec";
 	reset();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -198,12 +227,6 @@ HCURSOR CCalculatorDlg::OnQueryDragIcon()
 
 
 
-void CCalculatorDlg::OnBnClickedButtonDec()
-{
-	// TODO: Add your control notification handler code here
-}
-
-
 void CCalculatorDlg::resetOutput()
 {
 	m_output = m_outputResetString;
@@ -258,6 +281,24 @@ void CCalculatorDlg::doOperation(Calculator::ActionType operation, bool handleNu
 	{
 		// first add the last entered number
 		input.actionType = Calculator::ActionType::Number;
+		string s2((CStringA)m_output);
+		switch (m_calculator.mode)
+		{
+		case Calculator::Mode::Dec:
+			break;
+		case Calculator::Mode::Bin:
+		{
+			s2 = case_Bin_To_Dec(s2);
+			m_output = s2.c_str();
+			break;
+		}
+		case Calculator::Mode::Hex:
+		{
+			s2 = case_Hex_To_Dec(s2);
+			m_output = s2.c_str();
+			break;
+		}
+		}
 		input.value = _wtof(m_output);
 		m_calculator.addInput(input);
 	}
@@ -280,10 +321,29 @@ void CCalculatorDlg::doOperation(Calculator::ActionType operation, bool handleNu
 			if (!m_calculator.hasLeftTermValue() || !m_calculator.hasLeftExpressionValue())
 			{
 				// print the current total value
-				std::stringstream ss;
-				ss << m_calculator.getCurrentResult();
-				std::string curResult = ss.str();
+				//std::stringstream ss;
 
+				/*ss << m_calculator.getCurrentResult();*/
+
+				/*std::string curResult = ss.str();*/
+				std::string curResult = PrintQInt(m_calculator.getCurrentResult());
+				switch (m_calculator.mode)
+				{
+				case Calculator::Mode::Dec:
+					break;
+				case Calculator::Mode::Bin:
+				{
+					curResult = case_Dec_To_Bin(curResult);
+					m_output = curResult.c_str();
+					break;
+				}
+				case Calculator::Mode::Hex:
+				{
+					curResult = case_Dec_To_Hex(curResult);
+					m_output = curResult.c_str();
+					break;
+				}
+				}
 				m_output = "";
 				m_output += curResult.c_str();
 				UpdateData(FALSE);
@@ -328,48 +388,56 @@ void CCalculatorDlg::OnBnClickedButton1()
 
 void CCalculatorDlg::OnBnClickedButton2()
 {
-	addDigit('2');
+	if (m_calculator.mode != Calculator::Mode::Bin)
+		addDigit('2');
 }
 
 
 void CCalculatorDlg::OnBnClickedButton3()
 {
-	addDigit('3');
+	if (m_calculator.mode != Calculator::Mode::Bin)
+		addDigit('3');
 }
 
 void CCalculatorDlg::OnBnClickedButton4()
 {
-	addDigit('4');
+	if (m_calculator.mode != Calculator::Mode::Bin)
+		addDigit('4');
 }
 
 
 void CCalculatorDlg::OnBnClickedButton5()
 {
-	addDigit('5');
+	if (m_calculator.mode != Calculator::Mode::Bin)
+		addDigit('5');
 }
 
 
 void CCalculatorDlg::OnBnClickedButton6()
 {
-	addDigit('6');
+	if (m_calculator.mode != Calculator::Mode::Bin)
+		addDigit('6');
 }
 
 
 void CCalculatorDlg::OnBnClickedButton7()
 {
-	addDigit('7');
+	if (m_calculator.mode != Calculator::Mode::Bin)
+		addDigit('7');
 }
 
 
 void CCalculatorDlg::OnBnClickedButton8()
 {
-	addDigit('8');
+	if (m_calculator.mode != Calculator::Mode::Bin)
+		addDigit('8');
 }
 
 
 void CCalculatorDlg::OnBnClickedButton9()
 {
-	addDigit('9');
+	if (m_calculator.mode != Calculator::Mode::Bin)
+		addDigit('9');
 }
 
 
@@ -418,7 +486,7 @@ void CCalculatorDlg::OnBnClickedButtonDel()
 		return;
 
 	UpdateData();
-	if(m_firstDigitEntered == TRUE)
+	if (m_firstDigitEntered == TRUE)
 	{
 		if (m_output == m_outputResetString)
 			return;
@@ -434,6 +502,106 @@ void CCalculatorDlg::OnBnClickedButtonDel()
 		}
 		UpdateData(FALSE);
 	}
-	else 
+	else
 		return;
+}
+
+
+void CCalculatorDlg::OnEnChangeEdit1()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+}
+
+
+void CCalculatorDlg::OnBnClickedButtonAnd()
+{
+	doOperation(Calculator::ActionType::And);
+}
+
+void CCalculatorDlg::OnBnClickedButtonOr()
+{
+	doOperation(Calculator::ActionType::Or);
+}
+
+
+
+void CCalculatorDlg::OnBnClickedButtonXor()
+{
+	doOperation(Calculator::ActionType::Xor);
+}
+
+
+void CCalculatorDlg::OnBnClickedButtonNot()
+{
+	doOperation(Calculator::ActionType::Not);
+}
+
+void CCalculatorDlg::OnBnClickedButtonDec()
+{
+	m_calculator.mode = Calculator::Mode::Dec;
+	m_strEdit1 = "Dec";
+	UpdateData(FALSE);
+}
+
+void CCalculatorDlg::OnBnClickedButtonBin()
+{
+	m_calculator.mode = Calculator::Mode::Bin;
+	m_strEdit1 = "Bin";
+	UpdateData(FALSE);
+}
+
+
+void CCalculatorDlg::OnBnClickedButtonHex()
+{
+	m_calculator.mode = Calculator::Mode::Hex;
+	m_strEdit1 = "Hex";
+	UpdateData(FALSE);
+}
+
+
+
+void CCalculatorDlg::OnBnClickedButtonA()
+{
+	if (m_calculator.mode == Calculator::Mode::Hex)
+		addDigit('A');
+}
+
+
+void CCalculatorDlg::OnBnClickedButtonB()
+{
+	if (m_calculator.mode == Calculator::Mode::Hex)
+		addDigit('B');
+}
+
+
+void CCalculatorDlg::OnBnClickedButtonC()
+{
+	if (m_calculator.mode == Calculator::Mode::Hex)
+		addDigit('C');
+}
+
+
+void CCalculatorDlg::OnBnClickedButtonD()
+{
+	if (m_calculator.mode == Calculator::Mode::Hex)
+		addDigit('D');
+}
+
+
+void CCalculatorDlg::OnBnClickedButtonE()
+{
+	if (m_calculator.mode == Calculator::Mode::Hex)
+		addDigit('E');
+}
+
+
+void CCalculatorDlg::OnBnClickedButtonF()
+{
+	if (m_calculator.mode == Calculator::Mode::Hex)
+		addDigit('F');
 }

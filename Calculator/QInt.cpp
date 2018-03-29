@@ -462,7 +462,7 @@ QInt operator/(QInt Q, QInt M)
 {
 	QInt A;
 	if (GetBit(Q, 0))
-		~A;
+		A = ~A;
 	int k = 128;
 	while (k > 0)
 	{
@@ -492,11 +492,14 @@ QInt operator/(QInt Q, QInt M)
 	return Q;
 }
 
-void operator~(QInt & x)
+QInt operator~(QInt & x)
 {
-	for (int i = 0; i < 3; i++)
-		x.data[i] = ~x.data[i];
+	QInt kq;
+	for (int i = 0; i < 4; i++)
+		kq.data[i] = ~x.data[i];
+	return kq;
 }
+
 
 QInt operator &(QInt &a, QInt &b)
 {
@@ -544,7 +547,121 @@ QInt operator >> (QInt &a, int x)
 	return kq;
 }
 
+QInt operator-(QInt x)
+{
+	TwoComplement(x);
+	return x;
+}
 
 
+void QInt::operator=(int n)
+{
+	data[3] = n;
+	if (n >= 0)
+	{
+		for (int i = 0; i < 3; i++)
+			data[i] = 0;
+	}
+	else
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			data[i] = 0;
+			data[i] = ~data[i];
+		}
+	}
+}
 
+bool QInt::operator==(int n) const
+{
+	int a = data[3];
+	return a == n;
+}
 
+int strToint(string s, int m, int n)
+{
+	if (n - m == 1)
+		return s[m] - 48;
+	else return (s[m] - 48) * 10 + s[n - 1] - 48;
+}
+void strCopy(string s, string &temp, int a, int b)
+{
+	for (int i = a; i < b; i++)
+		temp.push_back(s[i]);
+}
+bool* strToBit(string s)
+{
+	int n = s.length();
+	bool* bit = new bool[128]{ 0 };
+	for (int i = 0; i<n; i++)
+		bit[127 - i] = s[n - i - 1] - 48;
+	return bit;
+}
+string case_Bin_To_Dec(string s)
+{
+	QInt a;
+	bool* bit;
+	bit = strToBit(s);
+	a = BinToDec(bit);
+	string kq;
+	kq = PrintQInt(a);
+	delete[]bit;
+	return kq;
+}
+string case_Bin_To_Hex(string s)
+{
+	QInt a;
+	bool *bit;
+	int n = s.length() / 4;
+	if (s.length() % 4 != 0) n++;
+	char* Char = new char[n];
+	bit = strToBit(s);
+	Char = BintoHex(bit);
+	string kq;
+	for (int i = 0; i < n; i++)
+		kq.push_back(Char[i]);
+	return kq;
+}
+string case_Dec_To_Bin(string s)
+{
+	QInt a;
+	bool* bit;
+	if (s[0] == '-')
+	{
+		s.erase(0, 1);
+		StrToQInt(s, a);
+		TwoComplement(a);
+	}
+	else
+		StrToQInt(s, a);
+	bit = DecToBin(a);
+	int n = lengthBit(bit);
+	string kq;
+	int temp;
+	for (int i = 0; i < n; i++)
+	{
+		temp = bit[128 - n + i];
+		kq.push_back(temp + 48);
+	}
+
+	return kq;
+}
+string case_Dec_To_Hex(string s)
+{
+	string str = case_Dec_To_Bin(s);
+	string kq = case_Bin_To_Hex(str);
+	return kq;
+}
+string case_Hex_To_Bin(string s)
+{
+	string kq;
+	kq = HexToBin(s);
+	return kq;
+}
+string case_Hex_To_Dec(string s)
+{
+	string kq;
+	kq = HexToBin(s);
+	kq = case_Bin_To_Dec(kq);
+	return kq;
+}

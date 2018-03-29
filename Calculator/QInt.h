@@ -11,6 +11,25 @@ struct QInt
 		for (int i = 0; i < 4; i++)
 			data[i] = 0;
 	}
+	QInt(int n)
+	{
+		data[3] = n;
+		if (n > 0)
+		{
+			for (int i = 0; i < 3; i++)
+				data[i] = 0;
+		}
+		else
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				data[i] = 0;
+				data[i] = ~data[i];
+			}
+		}
+	}
+	void operator = (int n);
+	bool operator ==(int n) const;
 };
 //gắn bit vào data tại vị trí i tương ứng
 void SetBit(QInt &a, int bit, int i);
@@ -48,11 +67,23 @@ QInt operator + (QInt a, QInt b);
 QInt operator - (QInt a, QInt b);
 QInt operator * (QInt a, QInt b);
 QInt operator / (QInt a, QInt b);
-void operator ~(QInt &x);
+QInt operator ~(QInt &x);
 QInt operator &(QInt &a, QInt &b);
 QInt operator |(QInt &a, QInt &b);
 QInt operator ^(QInt &a, QInt &b);
 QInt operator <<(QInt &x, int n);
 QInt operator >> (QInt &a, int x);
+QInt operator -(QInt x);
+
+/////////////////////
+int strToint(string s, int m, int n);
+void strCopy(string s, string &temp, int a, int b);
+bool* strToBit(string s);
+string case_Bin_To_Dec(string s);
+string case_Bin_To_Hex(string s);
+string case_Dec_To_Bin(string s);
+string case_Dec_To_Hex(string s);
+string case_Hex_To_Bin(string s);
+string case_Hex_To_Dec(string s);
 
 #pragma once

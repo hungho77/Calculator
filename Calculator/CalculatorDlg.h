@@ -42,7 +42,10 @@ private:
 	void addDigit(char digit);
 	void doOperation(Calculator::ActionType operation, bool handleNumber = true);
 
-
+	//
+	CString m_strEdit1;
+	CEdit m_edit1;
+	//
 	Calculator m_calculator;
 	CString m_output;
 	CFont m_font;
@@ -78,6 +81,15 @@ private:
 	CButton m_buttonMINUS;
 	CButton m_buttonCE;
 	CButton m_buttonDEL;
+	CButton m_buttonAnd;
+	CButton m_buttonOr;
+	CButton m_buttonXor;
+	CButton m_buttonNot;
+	CButton m_buttonDec;
+	CButton m_buttonBin;
+	CButton m_buttonHex;
+
+
 public:
 	afx_msg void OnEnChangeEditResult();
 	afx_msg void OnBnClickedButtonDec();
@@ -98,4 +110,27 @@ public:
 	afx_msg void OnBnClickedButtonDiv();
 	afx_msg void OnBnClickedButtonCe();
 	afx_msg void OnBnClickedButtonDel();
+	afx_msg void OnEnChangeEdit1();
+
+	afx_msg void OnBnClickedButtonAnd();
+	afx_msg void OnBnClickedButtonOr();
+	afx_msg void OnBnClickedButtonXor();
+	afx_msg void OnBnClickedButtonNot();
+	afx_msg void OnBnClickedButtonBin();
+	afx_msg void OnBnClickedButtonHex();
+	
+
+	CButton m_button10;
+	afx_msg void OnBnClickedButtonA();
+	CButton m_button11;
+	afx_msg void OnBnClickedButtonB();
+	CButton m_button12;
+	afx_msg void OnBnClickedButtonC();
+	CButton m_button13;
+	afx_msg void OnBnClickedButtonD();
+	CButton m_button14;
+	afx_msg void OnBnClickedButtonE();
+
+	CButton m_button15;
+	afx_msg void OnBnClickedButtonF();
 };

@@ -3,7 +3,7 @@
 
 Calculator::Action Calculator::getLastInput() const
 {
-	return m_actions.size() <= 0 ? Action{ ActionType::None, 0.0 } : m_actions.back();
+	return m_actions.size() <= 0 ? Action{ ActionType::None, 0 } : m_actions.back();
 }
 
 void Calculator::reset()
@@ -17,7 +17,8 @@ bool Calculator::isOperation(ActionType action) const
 {
 	return (action == ActionType::Plus || action == ActionType::Minus ||
 		action == ActionType::Multi || action == ActionType::Div ||
-		action == ActionType::Equal);
+		action == ActionType::Equal || action == ActionType::And || 
+		action == ActionType::Or || action == ActionType::Xor || action == ActionType::Not);
 }
 
 bool Calculator::isTerm(ActionType action) const
@@ -27,7 +28,8 @@ bool Calculator::isTerm(ActionType action) const
 
 bool Calculator::isExpression(ActionType action) const
 {
-	return (action == ActionType::Plus || action == ActionType::Minus);
+	return (action == ActionType::Plus || action == ActionType::Minus ||
+		action == ActionType::And || action == ActionType::Or || action == ActionType::Xor || action == ActionType::Not);
 }
 
 Calculator::ActionType Calculator::getLastOperation()
@@ -40,7 +42,7 @@ Calculator::ActionType Calculator::getLastOperation()
 	return ActionType::None;
 }
 
-double Calculator::getCurrentResult() const
+QInt Calculator::getCurrentResult() const
 {
 	// If "+" or "-" has been entered then this function always returns the current 
 	// m_leftExpression value.
@@ -74,7 +76,7 @@ bool Calculator::addInput(const Action& input)
 	}
 	else if (isOperation(input.actionType))
 	{
-		if (lastInput.actionType == ActionType::Number)
+		if (lastInput.actionType == ActionType::Number )
 		{
 			ActionType lastOperation = getLastOperation();
 			switch (lastOperation)
@@ -118,7 +120,7 @@ bool Calculator::addInput(const Action& input)
 			case ActionType::Div:
 				if (isExpression(input.actionType) || input.actionType == ActionType::Equal)
 				{
-					if (lastInput.value == 0.0)
+					if (lastInput.value == 0)
 					{
 						CalculatorException divByZeroException("Error: Cannot Div By Zero",
 							CalculatorException::ExceptionType::DividedByZero);
@@ -132,7 +134,7 @@ bool Calculator::addInput(const Action& input)
 					}
 				}
 				else if (isTerm(input.actionType)) // "3 / 4 x"
-					m_leftTerm.multiBy(1.0 / lastInput.value);
+					m_leftTerm.multiBy(1 / lastInput.value);
 				break;
 			case ActionType::Equal: // "=" is the start of a new beginnning, see (h: *)
 				if (isTerm(input.actionType))
@@ -160,6 +162,63 @@ bool Calculator::addInput(const Action& input)
 					// "3 + "
 					m_leftExpression.set(lastInput.value);
 					m_leftTerm.reset();
+				}
+				else if(input.actionType == ActionType::Equal)
+				{
+					m_leftExpression.set(lastInput.value);
+					m_leftTerm.reset();
+				}
+				break;
+			case ActionType::And:
+				if (isExpression(input.actionType) || input.actionType == ActionType::Equal)
+				{
+					
+					m_leftExpression.and(lastInput.value);
+					m_leftTerm.reset();
+				}
+				else if (isTerm(input.actionType))
+				{
+				
+					m_leftTerm.set(lastInput.value);
+				}
+				break;
+			case ActionType::Or:
+				if (isExpression(input.actionType) || input.actionType == ActionType::Equal)
+				{
+				
+					m_leftExpression.or(lastInput.value);
+					m_leftTerm.reset();
+				}
+				else if (isTerm(input.actionType))
+				{
+			
+					m_leftTerm.set(lastInput.value);
+				}
+				break;
+			case ActionType::Xor:
+				if (isExpression(input.actionType) || input.actionType == ActionType::Equal)
+				{
+
+					m_leftExpression.xor(lastInput.value);
+					m_leftTerm.reset();
+				}
+				else if (isTerm(input.actionType))
+				{
+
+					m_leftTerm.set(lastInput.value);
+				}
+				break;
+			case ActionType::Not:
+				if (isExpression(input.actionType) || input.actionType == ActionType::Equal)
+				{
+
+					m_leftExpression.not();
+					m_leftTerm.reset();
+				}
+				else if (isTerm(input.actionType))
+				{
+
+					m_leftTerm.set(lastInput.value);
 				}
 				break;
 			}
