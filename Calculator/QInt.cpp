@@ -42,6 +42,17 @@ void StrToQInt(string strX, QInt &a)
 		i--;
 	}
 }
+void DecStrToQInt(string strX, QInt & a)
+{
+	if (strX[0] == '-')
+	{
+		strX.erase(0, 1);
+		StrToQInt(strX, a);
+		TwoComplement(a);
+	}
+	else
+		StrToQInt(strX, a);
+}
 void ScanQInt(QInt &x)
 {
 	//biên chuỗi lưu giá trị người dùng nhập vào dưới dạng thập phân
@@ -256,6 +267,7 @@ int lengthBit(bool *bit)
 	for (int i = 0; i < 128; i++)
 		if (bit[i] == 1)
 			return 128 - i;
+	return 0;
 }
 
 char* BintoHex(bool* bit)
@@ -541,8 +553,16 @@ QInt operator >> (QInt &a, int x)
 	b = DecToBin(a);
 	for (int i = 127; i >= x; i--)
 		b[i] = b[i - x];
-	for (int i = 0; i <x; i++)
-		b[i] = 0;
+	if (GetBit(a, 0) == 0)
+	{
+		for (int i = 0; i < x; i++)
+			b[i] = 0;
+	}
+	else
+	{
+		for (int i = 0; i < x; i++)
+			b[i] = 1;
+	}
 	kq = BinToDec(b);
 	return kq;
 }
@@ -610,6 +630,8 @@ string case_Bin_To_Dec(string s)
 }
 string case_Bin_To_Hex(string s)
 {
+	if (s == "0")
+		return "0";
 	QInt a;
 	bool *bit;
 	int n = s.length() / 4;
@@ -626,14 +648,7 @@ string case_Dec_To_Bin(string s)
 {
 	QInt a;
 	bool* bit;
-	if (s[0] == '-')
-	{
-		s.erase(0, 1);
-		StrToQInt(s, a);
-		TwoComplement(a);
-	}
-	else
-		StrToQInt(s, a);
+	DecStrToQInt(s, a);
 	bit = DecToBin(a);
 	int n = lengthBit(bit);
 	string kq;
@@ -643,7 +658,8 @@ string case_Dec_To_Bin(string s)
 		temp = bit[128 - n + i];
 		kq.push_back(temp + 48);
 	}
-
+	if (kq.empty() == true)
+		kq = "0";
 	return kq;
 }
 string case_Dec_To_Hex(string s)

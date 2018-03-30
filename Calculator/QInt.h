@@ -38,6 +38,7 @@ bool GetBit(QInt a, int i);
 string strDiv2(string strX);
 //hàm chuyển chuỗi về kiểu QInt
 void StrToQInt(string strX, QInt &a);
+void DecStrToQInt(string strX, QInt &a);
 //hàm nhập 
 void ScanQInt(QInt &x);
 //hàm xuất

@@ -49,6 +49,8 @@ private:
 	Calculator m_calculator;
 	CString m_output;
 	CFont m_font;
+	CFont m_fontN;
+	CFont m_fontM;
 	BOOL m_firstDigitEntered = FALSE;
 	CEdit m_editResult;
 	CButton m_button0;
@@ -130,7 +132,11 @@ public:
 	afx_msg void OnBnClickedButtonD();
 	CButton m_button14;
 	afx_msg void OnBnClickedButtonE();
-
 	CButton m_button15;
 	afx_msg void OnBnClickedButtonF();
+
+	afx_msg void OnBnClickedButtonLsh();
+	afx_msg void OnBnClickedButtonRsh();
+	CButton m_buttonLsh;
+	CButton m_buttonRsh;
 };

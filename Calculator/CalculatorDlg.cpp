@@ -94,6 +94,8 @@ void CCalculatorDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON_D, m_button13);
 	DDX_Control(pDX, IDC_BUTTON_E, m_button14);
 	DDX_Control(pDX, IDC_BUTTON_F, m_button15);
+	DDX_Control(pDX, IDC_BUTTON_LSH, m_buttonLsh);
+	DDX_Control(pDX, IDC_BUTTON_RSH, m_buttonRsh);
 }
 
 BEGIN_MESSAGE_MAP(CCalculatorDlg, CDialogEx)
@@ -132,6 +134,8 @@ BEGIN_MESSAGE_MAP(CCalculatorDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_D, &CCalculatorDlg::OnBnClickedButtonD)
 	ON_BN_CLICKED(IDC_BUTTON_E, &CCalculatorDlg::OnBnClickedButtonE)
 	ON_BN_CLICKED(IDC_BUTTON_F, &CCalculatorDlg::OnBnClickedButtonF)
+	ON_BN_CLICKED(IDC_BUTTON_LSH, &CCalculatorDlg::OnBnClickedButtonLsh)
+	ON_BN_CLICKED(IDC_BUTTON_RSH, &CCalculatorDlg::OnBnClickedButtonRsh)
 END_MESSAGE_MAP()
 
 
@@ -169,6 +173,26 @@ BOOL CCalculatorDlg::OnInitDialog()
 	m_font.CreateFont(32, 0, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET,
 		0, 0, 0, 0, _T("Microsoft Sans Serif"));
 	m_editResult.SetFont(&m_font);
+	m_fontN.CreateFont(24, 0, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET,
+		0, 0, 0, 0, _T("Microsoft Sans Serif"));
+	m_fontM.CreateFont(16, 0, 0, 0,FW_NORMAL , 0, 0, 0, DEFAULT_CHARSET,
+		0, 0, 0, 0, _T("Microsoft Sans Serif"));
+	m_button0.SetFont(&m_fontN);
+	m_button1.SetFont(&m_fontN);
+	m_button2.SetFont(&m_fontN);
+	m_button3.SetFont(&m_fontN);
+	m_button4.SetFont(&m_fontN);
+	m_button5.SetFont(&m_fontN);
+	m_button6.SetFont(&m_fontN);
+	m_button7.SetFont(&m_fontN);
+	m_button8.SetFont(&m_fontN);
+	m_button9.SetFont(&m_fontN);
+	m_button10.SetFont(&m_fontM);
+	m_button11.SetFont(&m_fontM);
+	m_button12.SetFont(&m_fontM);
+	m_button13.SetFont(&m_fontM);
+	m_button14.SetFont(&m_fontM);
+	m_button15.SetFont(&m_fontM);
 	m_calculator.mode = Calculator::Dec;
 	m_strEdit1 = "Dec";
 	reset();
@@ -247,25 +271,20 @@ void CCalculatorDlg::addDigit(char digit)
 		return;
 
 	UpdateData();
-	// After an operation the next digit will always be the first digit of the next number.
-	// This check can only be done for the first digit, so if we are entering digits
-	// after first digit this check is ignored (m_firstDigitEntered==TRUE).
 	if (m_calculator.isOperation(m_calculator.getLastInput().actionType) &&
 		!m_firstDigitEntered)
 	{
-		// (3 + 4 x 6 = input: 2 => 2)
 		m_output = digit;
 	}
 	else
 	{
 		if (m_output == m_outputResetString && digit == '0')
-			return; // (0 : input: 0 => 0) if zero is the first digit typed, ignore it
+			return; 
 		else if (m_output == m_outputResetString)
-			m_output = digit; // (0 : input: 6 => 6) first digit
+			m_output = digit; 
 		else
-			m_output += digit; // (45 : input: 9 => 459)
+			m_output += digit; 
 	}
-	// a valid digit was added
 	m_firstDigitEntered = TRUE;
 	UpdateData(FALSE);
 }
@@ -279,7 +298,6 @@ void CCalculatorDlg::doOperation(Calculator::ActionType operation, bool handleNu
 	Calculator::Action input;
 	if (handleNumber)
 	{
-		// first add the last entered number
 		input.actionType = Calculator::ActionType::Number;
 		string s2((CStringA)m_output);
 		switch (m_calculator.mode)
@@ -299,33 +317,17 @@ void CCalculatorDlg::doOperation(Calculator::ActionType operation, bool handleNu
 			break;
 		}
 		}
-		input.value = _wtof(m_output);
+		DecStrToQInt(s2, input.value);
 		m_calculator.addInput(input);
 	}
-	// then add the (last) operation
 	input.actionType = operation;
 	m_errorInput = false;
 	try
 	{
-		// After a (valid) operation we always print a current result if
-		// there is something to print currently. This is the case with all the current 
-		// operations. Later on if there is different kind of operation which does not
-		// behave like this, then a new code is needed here for that operation.
 		if (m_calculator.addInput(input))
 		{
-			// The only situation we will not print the total result here is if both term and 
-			// expression have values currently (are "in use"). For example: "3 + 5 /", 
-			// => operation == Divide and we would not like to print the total result of
-			// this yet becouse that would be 3; we want to wait until the term part (5 / ...)
-			// is finished, then we will print the total 3 + ... .
 			if (!m_calculator.hasLeftTermValue() || !m_calculator.hasLeftExpressionValue())
 			{
-				// print the current total value
-				//std::stringstream ss;
-
-				/*ss << m_calculator.getCurrentResult();*/
-
-				/*std::string curResult = ss.str();*/
 				std::string curResult = PrintQInt(m_calculator.getCurrentResult());
 				switch (m_calculator.mode)
 				{
@@ -349,18 +351,15 @@ void CCalculatorDlg::doOperation(Calculator::ActionType operation, bool handleNu
 				UpdateData(FALSE);
 			}
 		}
-		else // this should never happen; coming here means possible an error in the code
+		else 
 			AfxMessageBox(_T("Error: An unknown operation."));
 	}
 	catch (std::exception& e)
 	{
-		// note: the user can only continue after "divided by zero" error
-		// by pressing "CE"/reset.
 		m_output = e.what();
 		m_firstDigitEntered = FALSE;
 		m_errorInput = true;
 	}
-	// update output
 	UpdateData(FALSE);
 	m_firstDigitEntered = FALSE;
 }
@@ -545,6 +544,45 @@ void CCalculatorDlg::OnBnClickedButtonDec()
 {
 	m_calculator.mode = Calculator::Mode::Dec;
 	m_strEdit1 = "Dec";
+	std::string curResult = PrintQInt(m_calculator.getCurrentResult());
+	switch (m_calculator.mode)
+	{
+	case Calculator::Mode::Dec:
+		break;
+	case Calculator::Mode::Bin:
+	{
+		curResult = case_Dec_To_Bin(curResult);
+		m_output = curResult.c_str();
+		break;
+	}
+	case Calculator::Mode::Hex:
+	{
+		curResult = case_Dec_To_Hex(curResult);
+		m_output = curResult.c_str();
+		break;
+	}
+	}
+	m_output = "";
+	m_output += curResult.c_str();
+
+	//setfont
+	m_button0.SetFont(&m_fontN);
+	m_button1.SetFont(&m_fontN);
+	m_button2.SetFont(&m_fontN);
+	m_button3.SetFont(&m_fontN);
+	m_button4.SetFont(&m_fontN);
+	m_button5.SetFont(&m_fontN);
+	m_button6.SetFont(&m_fontN);
+	m_button7.SetFont(&m_fontN);
+	m_button8.SetFont(&m_fontN);
+	m_button9.SetFont(&m_fontN);
+	m_button10.SetFont(&m_fontM);
+	m_button11.SetFont(&m_fontM);
+	m_button12.SetFont(&m_fontM);
+	m_button13.SetFont(&m_fontM);
+	m_button14.SetFont(&m_fontM);
+	m_button15.SetFont(&m_fontM);
+	//end setfont
 	UpdateData(FALSE);
 }
 
@@ -552,6 +590,44 @@ void CCalculatorDlg::OnBnClickedButtonBin()
 {
 	m_calculator.mode = Calculator::Mode::Bin;
 	m_strEdit1 = "Bin";
+	std::string curResult = PrintQInt(m_calculator.getCurrentResult());
+	switch (m_calculator.mode)
+	{
+	case Calculator::Mode::Dec:
+		break;
+	case Calculator::Mode::Bin:
+	{
+		curResult = case_Dec_To_Bin(curResult);
+		m_output = curResult.c_str();
+		break;
+	}
+	case Calculator::Mode::Hex:
+	{
+		curResult = case_Dec_To_Hex(curResult);
+		m_output = curResult.c_str();
+		break;
+	}
+	}
+	m_output = "";
+	m_output += curResult.c_str();
+	//setfont
+	m_button0.SetFont(&m_fontN);
+	m_button1.SetFont(&m_fontN);
+	m_button2.SetFont(&m_fontM);
+	m_button3.SetFont(&m_fontM);
+	m_button4.SetFont(&m_fontM);
+	m_button5.SetFont(&m_fontM);
+	m_button6.SetFont(&m_fontM);
+	m_button7.SetFont(&m_fontM);
+	m_button8.SetFont(&m_fontM);
+	m_button9.SetFont(&m_fontM);
+	m_button10.SetFont(&m_fontM);
+	m_button11.SetFont(&m_fontM);
+	m_button12.SetFont(&m_fontM);
+	m_button13.SetFont(&m_fontM);
+	m_button14.SetFont(&m_fontM);
+	m_button15.SetFont(&m_fontM);
+	//end setfont
 	UpdateData(FALSE);
 }
 
@@ -560,6 +636,44 @@ void CCalculatorDlg::OnBnClickedButtonHex()
 {
 	m_calculator.mode = Calculator::Mode::Hex;
 	m_strEdit1 = "Hex";
+	std::string curResult = PrintQInt(m_calculator.getCurrentResult());
+	switch (m_calculator.mode)
+	{
+	case Calculator::Mode::Dec:
+		break;
+	case Calculator::Mode::Bin:
+	{
+		curResult = case_Dec_To_Bin(curResult);
+		m_output = curResult.c_str();
+		break;
+	}
+	case Calculator::Mode::Hex:
+	{
+		curResult = case_Dec_To_Hex(curResult);
+		m_output = curResult.c_str();
+		break;
+	}
+	}
+	m_output = "";
+	m_output += curResult.c_str();
+	//setfont
+	m_button0.SetFont(&m_fontN);
+	m_button1.SetFont(&m_fontN);
+	m_button2.SetFont(&m_fontN);
+	m_button3.SetFont(&m_fontN);
+	m_button4.SetFont(&m_fontN);
+	m_button5.SetFont(&m_fontN);
+	m_button6.SetFont(&m_fontN);
+	m_button7.SetFont(&m_fontN);
+	m_button8.SetFont(&m_fontN);
+	m_button9.SetFont(&m_fontN);
+	m_button10.SetFont(&m_fontN);
+	m_button11.SetFont(&m_fontN);
+	m_button12.SetFont(&m_fontN);
+	m_button13.SetFont(&m_fontN);
+	m_button14.SetFont(&m_fontN);
+	m_button15.SetFont(&m_fontN);
+	//end setfont
 	UpdateData(FALSE);
 }
 
@@ -604,4 +718,16 @@ void CCalculatorDlg::OnBnClickedButtonF()
 {
 	if (m_calculator.mode == Calculator::Mode::Hex)
 		addDigit('F');
+}
+
+
+void CCalculatorDlg::OnBnClickedButtonLsh()
+{
+	doOperation(Calculator::ActionType::Lsh);
+}
+
+
+void CCalculatorDlg::OnBnClickedButtonRsh()
+{
+	doOperation(Calculator::ActionType::Rsh);
 }
